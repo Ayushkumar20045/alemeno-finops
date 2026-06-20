@@ -1,0 +1,50 @@
+services:
+
+  db:
+    image: postgres:16
+    container_name: alemeno_postgres
+    restart: always
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: alemeno_db
+    ports:
+      - "5432:5432"
+
+  redis:
+    image: redis:7
+    container_name: alemeno_redis
+    restart: always
+    ports:
+      - "6379:6379"
+
+  api:
+    build: .
+    container_name: alemeno_api
+    restart: always
+
+    ports:
+      - "8000:8000"
+
+    depends_on:
+      - db
+      - redis
+
+    volumes:
+      - .:/app
+
+    command: uvicorn main:app --host 0.0.0.0 --port 8000
+
+  worker:
+    build: .
+    container_name: alemeno_worker
+    restart: always
+
+    depends_on:
+      - db
+      - redis
+
+    volumes:
+      - .:/app
+
+    command: celery -A app.celery_app worker --loglevel=info
