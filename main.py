@@ -7,6 +7,7 @@ from app.api.status import router as status_router
 from app.models.job import Job
 from app.models.transaction import Transaction
 from app.models.summary import JobSummary
+from app.models.insight import Insight
 from app.api.jobs import router
 
 

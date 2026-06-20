@@ -246,3 +246,36 @@ def get_transactions(
     db.close()
 
     return result
+
+@router.post("/jobs/{job_id}/retry")
+def retry_job(job_id: int):
+
+    db = SessionLocal()
+
+    job = (
+        db.query(Job)
+        .filter(Job.id == job_id)
+        .first()
+    )
+
+    if job is None:
+
+        db.close()
+
+        return {
+            "message": "Job not found"
+        }
+
+    filepath = f"uploads/{job.filename}"
+
+    job.status = "pending"
+
+    db.commit()
+
+    db.close()
+
+    process_csv.delay(job_id, filepath)
+
+    return {
+        "message": "Job resubmitted"
+    }

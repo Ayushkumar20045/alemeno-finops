@@ -5,6 +5,8 @@ from app.database.connection import SessionLocal
 from app.models.job import Job
 from app.models.transaction import Transaction
 from app.models.summary import JobSummary
+from app.models.insight import Insight
+from app.services.llm_service import generate_narrative_summary
 from app.celery_app import celery
 
 
@@ -121,11 +123,19 @@ def process_csv(job_id, filepath):
         total_amount = float(amount_series.sum())
 
         successful_transactions = int(
-            (df["status"].astype(str).str.upper() == "SUCCESS").sum()
+            (
+                df["status"]
+                .astype(str)
+                .str.upper() == "SUCCESS"
+            ).sum()
         )
 
         failed_transactions = int(
-            (df["status"].astype(str).str.upper() == "FAILED").sum()
+            (
+                df["status"]
+                .astype(str)
+                .str.upper() == "FAILED"
+            ).sum()
         )
 
         anomaly_count = int(
@@ -157,6 +167,61 @@ def process_csv(job_id, filepath):
             )
 
             db.add(summary)
+
+        existing_insight = (
+            db.query(Insight)
+            .filter(Insight.job_id == job_id)
+            .first()
+        )
+
+        if existing_insight is None:
+
+            merchants = (
+                df["merchant"]
+                .value_counts()
+                .head(3)
+                .index
+                .tolist()
+            )
+
+            total_spend_inr = float(
+                df.loc[
+                    df["currency"].str.upper() == "INR",
+                    "clean_amount"
+                ].sum()
+            )
+
+            total_spend_usd = float(
+                df.loc[
+                    df["currency"].str.upper() == "USD",
+                    "clean_amount"
+                ].sum()
+            )
+
+            llm_input = {
+                "total_spend_inr": total_spend_inr,
+                "total_spend_usd": total_spend_usd,
+                "top_3_merchants": merchants,
+                "anomaly_count": anomaly_count
+            }
+
+            insight_data = generate_narrative_summary(
+                llm_input
+            )
+
+            insight = Insight(
+                job_id=job_id,
+                total_spend_inr=insight_data["total_spend_inr"],
+                total_spend_usd=insight_data["total_spend_usd"],
+                top_3_merchants=", ".join(
+                    insight_data["top_3_merchants"]
+                ),
+                anomaly_count=insight_data["anomaly_count"],
+                narrative=insight_data["narrative"],
+                risk_level=insight_data["risk_level"]
+            )
+
+            db.add(insight)
 
         db.commit()
 

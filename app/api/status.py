@@ -1,6 +1,8 @@
 from fastapi import APIRouter
 from app.models.transaction import Transaction
 import pandas as pd
+from app.models.insight import Insight
+from app.models.insight import Insight
 
 from app.database.connection import SessionLocal
 from app.models.job import Job
@@ -1138,4 +1140,67 @@ def get_narrative_summary(job_id: int):
         "top_merchants": top_merchants,
         "risk_level": risk_level,
         "narrative": narrative
-    }                            
+    }  
+    
+@router.get("/jobs/{job_id}/insights")
+def get_insights(job_id: int):
+
+    db = SessionLocal()
+
+    insight = (
+        db.query(Insight)
+        .filter(Insight.job_id == job_id)
+        .first()
+    )
+
+    if insight is None:
+        db.close()
+
+        return {
+            "message": "Insights not found"
+        }
+
+    response = {
+        "total_spend_inr": insight.total_spend_inr,
+        "total_spend_usd": insight.total_spend_usd,
+        "top_3_merchants": insight.top_3_merchants,
+        "anomaly_count": insight.anomaly_count,
+        "narrative": insight.narrative,
+        "risk_level": insight.risk_level
+    }
+
+    db.close()
+
+    return response                              
+
+@router.get("/jobs/{job_id}/insights")
+def get_job_insights(job_id: int):
+
+    db = SessionLocal()
+
+    insight = (
+        db.query(Insight)
+        .filter(Insight.job_id == job_id)
+        .first()
+    )
+
+    if insight is None:
+
+        db.close()
+
+        return {
+            "message": "Insights not found"
+        }
+
+    response = {
+        "total_spend_inr": insight.total_spend_inr,
+        "total_spend_usd": insight.total_spend_usd,
+        "top_3_merchants": insight.top_3_merchants.split(", "),
+        "anomaly_count": insight.anomaly_count,
+        "narrative": insight.narrative,
+        "risk_level": insight.risk_level
+    }
+
+    db.close()
+
+    return response
