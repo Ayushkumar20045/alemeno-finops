@@ -68,7 +68,7 @@ alemeno-finops/
 ```
 ## High-Level Architecture
 
-![Alemeno Architecture](docs/alemeno.png)
+![Alemeno Architecture](alemeno.png)
 
 ---
 
