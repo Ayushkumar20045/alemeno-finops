@@ -66,6 +66,9 @@ alemeno-finops/
 ├── requirements.txt
 └── README.md
 ```
+## High-Level Architecture
+
+![Architecture Diagram](docs/architecture.png)
 
 ---
 
