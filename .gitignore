@@ -1,7 +1,7 @@
-venv/
 .env
-
+transactions.db
+test_gemini.py
 __pycache__/
 *.pyc
-
+venv/
 uploads/
