@@ -70,6 +70,13 @@ alemeno-finops/
 
 ![Alemeno Architecture](alemeno.png)
 
+## Technical Review Video
+
+A 3-minute engineering design review video demonstrating the system architecture, request lifecycle, bottlenecks, and scalability considerations can be accessed here:
+
+📹 Video Link:
+https://drive.google.com/drive/folders/1R8jWtsP1tlqr49qHUS3wx6xppWyktj39?usp=sharing
+
 ---
 
 ## API Endpoints
